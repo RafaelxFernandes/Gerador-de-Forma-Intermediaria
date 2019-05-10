@@ -33,7 +33,7 @@ LETRA   [A-Za-z_]
 WS      [ \t\n]
 
 NUMERO  {DIGITO}+
-ID      {LETRA}({LETRA}|{DIGITO})*
+ID      {LETRA}({LETRA}|{DIGITO})*    
 INT     {DIGITO}+
 FLOAT   {INT}("."{INT})?([E|e]("+"|"-")?{INT})?
 
@@ -146,9 +146,13 @@ void T_linha(){
 
 void F(){
     switch(token){
+        if(token == "print"){
+            token = next_token();
+        }
+
         case ID:
             casa(ID);
-            print(lexema + '@');
+            print(lexema + ' @');
         break;
 
         case NUMERO:
@@ -163,7 +167,7 @@ void F(){
         break;
 
         default:
-        erro("Operando esperado, encontrado" + lexema);    
+            erro("Operando esperado, encontrado" + lexema);    
     }
 }
 //Fim das regras da gramática
