@@ -27,7 +27,7 @@
     void T_linha();
     void F();
 
-    enum { _NUMERO = 256, _ID };
+    enum { _NUMERO = 256, _ID, _PRINT };
 
 %}
      
@@ -38,6 +38,8 @@ WS      [ \t\n]
 NUMERO  {DIGITO}+
 ID      {LETRA}({LETRA}|{DIGITO})*
 
+PRINT ^print$
+
 %%
 
 {WS}    {}
@@ -45,7 +47,19 @@ ID      {LETRA}({LETRA}|{DIGITO})*
 {NUMERO} { return _NUMERO; }
 {ID}    { return _ID; }
 
+{PRINT} { return _PRINT; }
+
 %%
+
+int main(){
+    token = next_token();
+    
+    while(token != 0){
+        A();
+    }
+
+    return 0;
+}
 
 int next_token(){
     return yylex();
@@ -62,11 +76,25 @@ void casa(int esperado){
 
 //Início das regras da gramática
 void A(){
-    casa(_ID);
-    cout << lexema << endl;
-    casa('=');
-    E();
-    cout << '=' << endl;
+    switch(token){
+        case _ID:
+            casa(_ID);
+            cout << lexema << endl;
+            casa('=');
+            E();
+            cout << '=' << endl;
+            break;
+        
+
+        case _PRINT:
+            token = next_token(); //Não queremos imprimir "print a", mas sim "a @"
+            casa(_PRINT);
+            F();
+            if(lexema == ";"){
+                casa(';');
+            }
+            break;
+    }
 }
 
 void E(){
@@ -137,12 +165,5 @@ void F(){
             //Erro
             cout << "Operando esperado, encontrado" << lexema << endl;    
     }
-}
+} 
 //Fim das regras da gramática
-
-int main(){
-    token = next_token();
-    A();
-
-    return 0;
-}
