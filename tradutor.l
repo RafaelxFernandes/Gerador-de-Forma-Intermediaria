@@ -9,23 +9,26 @@
 
     //Using
     using namespace std;
+    
+    //Variáveis globais
+    int token;
+    string lexema;
+    vector<string> pilha;
+    map<string, double> var;
 
     //Funções utilizadas
+    int next_token();
+    void casa();
+    //Regras da gramática
     void A();
     void E();
     void E_linha();
     void T();
     void T_linha();
     void F();
-    void casa();
-    int next_token();
-    void print();
-    void erro();
 
-    //Variáveis globais
-    string lexema;
-    vector<string> pilha;
-    map<string, double> var;
+    enum { _NUMERO = 256, _ID };
+
 %}
      
 DIGITO  [0-9]
@@ -33,36 +36,14 @@ LETRA   [A-Za-z_]
 WS      [ \t\n]
 
 NUMERO  {DIGITO}+
-ID      {LETRA}({LETRA}|{DIGITO})*    
-INT     {DIGITO}+
-FLOAT   {INT}("."{INT})?([E|e]("+"|"-")?{INT})?
-
-STRING  \"(\"\"|\\\"|[^\n\"])*\"
-COMENTARIO \/\*(((([^\*])*\*(\*)*([^\*\/]))*)(([^\*])*\*(\*)*))\/
-
-RESTO [^\n]
+ID      {LETRA}({LETRA}|{DIGITO})*
 
 %%
 
 {WS}    {}
 
-"for"   { return _FOR; }
-"if"    { return _IF; }
-
-{INT}   { return _INT; }
-{FLOAT} { return _FLOAT; }
-
-">="    { return _MAIG; }
-"<="    { return _MEIG; }
-"=="    { return _IG; }
-"!="    { return _DIF; }
-
-{STRING} { return _STRING; }
-{COMENTARIO} { return _COMENTARIO; }
-
+{NUMERO} { return _NUMERO; }
 {ID}    { return _ID; }
-
-{RESTO} { return *yytext; }
 
 %%
 
@@ -74,28 +55,18 @@ void casa(int esperado){
     if(token == esperado){
         token = next_token();
     } else{
-        cout << "Esperado, " << esperado
-            << "encontrado: " << token << endl;
+        cout << "Esperado, " << esperado << "encontrado: " << token << endl;
         exit(1);
     }
 }
 
-void print(lexema){
-    cout << lexema << endl;
-}
-
-//>>> Conferir se está certo, pois está igual ao print <<<
-void erro(lexema){
-    cout << lexema << endl;
-}
-
 //Início das regras da gramática
 void A(){
-    casa(ID);
-    print(lexema);
+    casa(_ID);
+    cout << lexema << endl;
     casa('=');
     E();
-    print('=');
+    cout << '=' << endl;
 }
 
 void E(){
@@ -108,14 +79,14 @@ void E_linha(){
         case '+':
             casa('+');
             T();
-            print('+');
+            cout << '+' << endl;
             E_linha();
         break;
 
         case '-':
             casa('-');
             T();
-            print('-');
+            cout << '-' << endl;
             E_linha();
         break;
     }
@@ -131,14 +102,14 @@ void T_linha(){
         case '*':
             casa('*');
             F();
-            print('*');
+            cout << '*' << endl;
             T_linha();
         break;
 
         case '/':
             casa ('/');
             F();
-            print('/');
+            cout << '/' << endl;
             T_linha();
         break;
     }
@@ -146,18 +117,14 @@ void T_linha(){
 
 void F(){
     switch(token){
-        if(token == "print"){
-            token = next_token();
-        }
-
-        case ID:
-            casa(ID);
-            print(lexema + ' @');
+        case _ID:
+            casa(_ID);
+            cout << lexema << '@' << endl;
         break;
 
-        case NUMERO:
-            casa(NUMERO);
-            print(lexema);
+        case _NUMERO:
+            casa(_NUMERO);
+            cout << lexema << endl;
         break;
 
         case '(':
@@ -167,7 +134,15 @@ void F(){
         break;
 
         default:
-            erro("Operando esperado, encontrado" + lexema);    
+            //Erro
+            cout << "Operando esperado, encontrado" << lexema << endl;    
     }
 }
 //Fim das regras da gramática
+
+int main(){
+    token = next_token();
+    A();
+
+    return 0;
+}
