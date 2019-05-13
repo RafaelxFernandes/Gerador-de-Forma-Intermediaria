@@ -13,8 +13,8 @@
     int token;
 
     //Funções utilizadas
-    string nome_token();
-    void casa();
+    string nome_token(int);
+    void casa(int);
 
     //Regras da gramática
     void A();
@@ -24,7 +24,7 @@
     void T_linha();
     void F();
 
-    enum { _ID = 256, _INT, _FLOAT, _STRING, _PRINT };
+    enum { _PRINT = 256, _ID, _INT, _FLOAT, _STRING };
 
     map<int, string> nome_tokens{
         { _PRINT, "print" },
@@ -39,7 +39,7 @@ DIGITO  [0-9]
 LETRA   [A-Za-z_]
 WS      [ \t\n]
 
-PRINT ^print$
+PRINT   "print"
 
 ID      {LETRA}({LETRA}|{DIGITO})*
 INT     {DIGITO}+
@@ -47,11 +47,11 @@ FLOAT   {INT}("."{INT})?([E|e]("+"|"-")?{INT})?
 
 STRING  \"(\"\"|\\\"|[^\n\"])*\"
 
-RESTO [^\n]
+RESTO   [^\n]
 
 %%
 
-{WS}    {}
+{WS}     {}
 
 {PRINT}  { return _PRINT; }
 
@@ -68,7 +68,9 @@ RESTO [^\n]
 int main(){
     token = yylex();
     
-    A();
+    while(token != 0){
+        A();
+    }
 
     return 0;
 }
@@ -96,7 +98,6 @@ void casa(int esperado){
 void A(){
     switch(token){
         case _PRINT:
-            token = yylex();
             casa(_PRINT);
             F();
             if(yytext == ";"){
