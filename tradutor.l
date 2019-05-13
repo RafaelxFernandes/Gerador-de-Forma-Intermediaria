@@ -13,7 +13,7 @@
     int token;
 
     //Funções utilizadas
-    int next_token();
+    string nome_token();
     void casa();
 
     //Regras da gramática
@@ -23,13 +23,16 @@
     void T();
     void T_linha();
     void F();
+    void VS();
 
-    enum { tk_num = 256, tk_id, tk_print };
+    enum { _ID = 256, _INT, _FLOAT, _STRING, _PRINT };
 
     map<int, string> nome_tokens{
-        { tk_num, "numero" },
-        { tk_id, "id" },
-        { tk_print, "print" }
+        { _ID, "id" },
+        { _INT, "int" },
+        { _FLOAT, "float" },
+        { _STRING, "string" },
+        { _PRINT, "print" }
     };
 %}
      
@@ -37,27 +40,41 @@ DIGITO  [0-9]
 LETRA   [A-Za-z_]
 WS      [ \t\n]
 
-NUMERO  {DIGITO}+
 ID      {LETRA}({LETRA}|{DIGITO})*
+INT     {DIGITO}+
+FLOAT   {INT}("."{INT})?([E|e]("+"|"-")?{INT})?
+
+STRING  \"(\"\"|\\\"|[^\n\"])*\"
 
 PRINT ^print$
+
+RESTO [^\n]
 
 %%
 
 {WS}    {}
 
-{NUMERO} { return tk_num; }
-{ID}     { return tk_id; }
+{ID}     { return _ID; }
+{INT}    { return _INT; }
+{FLOAT}  { return _FLOAT; }
 
-{PRINT}  { return tk_print; }
+{STRING} { return _STRING; }
+
+{PRINT}  { return _PRINT; }
+
+{RESTO}  { return *yytext; }
 
 %%
 
 int main(){
     token = yylex();
     
-    while(token != 0){
-        A();
+    VS();
+
+    if(token == 0){
+        cout << "Sintaxe ok!" << endl;
+    } else{
+        cout << "Caracteres encontrados após o final do programa" << endl;
     }
 
     return 0;
@@ -77,25 +94,39 @@ void casa(int esperado){
     if(token == esperado){
         token = yylex();
     } else{
-        cout << "Esperado" << esperado << " ,encontrado: " << nome_token(token) << endl;
+        cout << "Esperado" << nome_token(esperado) << " ,encontrado: " << nome_token(token) << endl;
         exit(1);
     }
 }
 
 //Início das regras da gramática
+void VS(){
+    A();
+
+    switch(token){
+        case _ID:
+        case _INT:
+        case _FLOAT:
+        case _STRING:
+        case _PRINT:
+            VS();
+        break;
+    }
+}
+
 void A(){
     switch(token){
-        case tk_id:
-            casa(tk_id);
+        case _ID:
+            casa(_ID);
             cout << yytext << endl;
             casa('=');
             E();
             cout << '=' << endl;
         break;       
 
-        case tk_print:
+        case _PRINT:
             token = yylex();
-            casa(tk_print);
+            casa(_PRINT);
             F();
             if(yytext == ";"){
                 casa(';');
@@ -152,13 +183,23 @@ void T_linha(){
 
 void F(){
     switch(token){
-        case tk_id:
-            casa(tk_id);
+        case _ID:
+            casa(_ID);
             cout << yytext << '@' << endl;
         break;
 
-        case tk_num:
-            casa(tk_num);
+        case _INT:
+            casa(_INT);
+            cout << yytext << endl;
+        break;
+
+        case _FLOAT:
+            casa(_FLOAT);
+            cout << yytext << endl;
+        break;
+
+        case _STRING:
+            casa(_STRING);
             cout << yytext << endl;
         break;
 
@@ -173,5 +214,4 @@ void F(){
             cout << "Operando esperado, encontrado: " << yytext << endl;
         break;    
     }
-} 
-//Fim das regras da gramática
+}
