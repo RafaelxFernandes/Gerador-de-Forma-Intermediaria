@@ -23,16 +23,15 @@
     void T();
     void T_linha();
     void F();
-    void VS();
 
     enum { _ID = 256, _INT, _FLOAT, _STRING, _PRINT };
 
     map<int, string> nome_tokens{
+        { _PRINT, "print" },
         { _ID, "id" },
         { _INT, "int" },
         { _FLOAT, "float" },
-        { _STRING, "string" },
-        { _PRINT, "print" }
+        { _STRING, "string" }
     };
 %}
      
@@ -40,13 +39,13 @@ DIGITO  [0-9]
 LETRA   [A-Za-z_]
 WS      [ \t\n]
 
+PRINT ^print$
+
 ID      {LETRA}({LETRA}|{DIGITO})*
 INT     {DIGITO}+
 FLOAT   {INT}("."{INT})?([E|e]("+"|"-")?{INT})?
 
 STRING  \"(\"\"|\\\"|[^\n\"])*\"
-
-PRINT ^print$
 
 RESTO [^\n]
 
@@ -54,13 +53,13 @@ RESTO [^\n]
 
 {WS}    {}
 
+{PRINT}  { return _PRINT; }
+
 {ID}     { return _ID; }
 {INT}    { return _INT; }
 {FLOAT}  { return _FLOAT; }
 
 {STRING} { return _STRING; }
-
-{PRINT}  { return _PRINT; }
 
 {RESTO}  { return *yytext; }
 
@@ -69,13 +68,7 @@ RESTO [^\n]
 int main(){
     token = yylex();
     
-    VS();
-
-    if(token == 0){
-        cout << "Sintaxe ok!" << endl;
-    } else{
-        cout << "Caracteres encontrados após o final do programa" << endl;
-    }
+    A();
 
     return 0;
 }
@@ -100,30 +93,8 @@ void casa(int esperado){
 }
 
 //Início das regras da gramática
-void VS(){
-    A();
-
-    switch(token){
-        case _ID:
-        case _INT:
-        case _FLOAT:
-        case _STRING:
-        case _PRINT:
-            VS();
-        break;
-    }
-}
-
 void A(){
     switch(token){
-        case _ID:
-            casa(_ID);
-            cout << yytext << endl;
-            casa('=');
-            E();
-            cout << '=' << endl;
-        break;       
-
         case _PRINT:
             token = yylex();
             casa(_PRINT);
@@ -131,6 +102,15 @@ void A(){
             if(yytext == ";"){
                 casa(';');
             }
+        break;
+        
+        case _ID:
+            cout << yytext << endl;
+            casa(_ID);
+            casa('=');
+            E();
+            cout << '=' << endl;
+            casa(';');
         break;
     }
 }
@@ -184,23 +164,23 @@ void T_linha(){
 void F(){
     switch(token){
         case _ID:
-            casa(_ID);
             cout << yytext << '@' << endl;
+            casa(_ID);
         break;
 
         case _INT:
-            casa(_INT);
             cout << yytext << endl;
+            casa(_INT);
         break;
 
         case _FLOAT:
-            casa(_FLOAT);
             cout << yytext << endl;
+            casa(_FLOAT);
         break;
 
         case _STRING:
-            casa(_STRING);
             cout << yytext << endl;
+            casa(_STRING);
         break;
 
         case '(':
