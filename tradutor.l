@@ -3,7 +3,6 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string>
-    #include <vector>
     #include <map>
     #include <iostream>
 
@@ -12,7 +11,6 @@
     
     //Variáveis globais
     int token;
-    string lexema;
 
     //Funções utilizadas
     int next_token();
@@ -33,7 +31,6 @@
         { tk_id, "id" },
         { tk_print, "print" }
     };
-
 %}
      
 DIGITO  [0-9]
@@ -57,17 +54,13 @@ PRINT ^print$
 %%
 
 int main(){
-    token = next_token();
+    token = yylex();
     
     while(token != 0){
         A();
     }
 
     return 0;
-}
-
-int next_token(){
-    return yylex();
 }
 
 string nome_token(int token){
@@ -82,9 +75,9 @@ string nome_token(int token){
 
 void casa(int esperado){
     if(token == esperado){
-        token = next_token();
+        token = yylex();
     } else{
-        cout << "Esperado, " << esperado << "encontrado: " << token << endl;
+        cout << "Esperado" << esperado << " ,encontrado: " << nome_token(token) << endl;
         exit(1);
     }
 }
@@ -94,21 +87,20 @@ void A(){
     switch(token){
         case tk_id:
             casa(tk_id);
-            cout << lexema << endl;
+            cout << yytext << endl;
             casa('=');
             E();
             cout << '=' << endl;
-            break;
-        
+        break;       
 
         case tk_print:
-            token = next_token(); //Não queremos imprimir "print a", mas sim "a @"
+            token = yylex();
             casa(tk_print);
             F();
-            if(lexema == ";"){
+            if(yytext == ";"){
                 casa(';');
             }
-            break;
+        break;
     }
 }
 
@@ -162,12 +154,12 @@ void F(){
     switch(token){
         case tk_id:
             casa(tk_id);
-            cout << lexema << '@' << endl;
+            cout << yytext << '@' << endl;
         break;
 
         case tk_num:
             casa(tk_num);
-            cout << lexema << endl;
+            cout << yytext << endl;
         break;
 
         case '(':
@@ -178,7 +170,8 @@ void F(){
 
         default:
             //Erro
-            cout << "Operando esperado, encontrado" << lexema << endl;    
+            cout << "Operando esperado, encontrado: " << yytext << endl;
+        break;    
     }
 } 
 //Fim das regras da gramática
