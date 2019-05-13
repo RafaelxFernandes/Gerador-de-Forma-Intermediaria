@@ -13,12 +13,11 @@
     //Variáveis globais
     int token;
     string lexema;
-    vector<string> pilha;
-    map<string, double> var;
 
     //Funções utilizadas
     int next_token();
     void casa();
+
     //Regras da gramática
     void A();
     void E();
@@ -27,7 +26,13 @@
     void T_linha();
     void F();
 
-    enum { _NUMERO = 256, _ID, _PRINT };
+    enum { tk_num = 256, tk_id, tk_print };
+
+    map<int, string> nome_tokens{
+        { tk_num, "numero" },
+        { tk_id, "id" },
+        { tk_print, "print" }
+    };
 
 %}
      
@@ -44,10 +49,10 @@ PRINT ^print$
 
 {WS}    {}
 
-{NUMERO} { return _NUMERO; }
-{ID}    { return _ID; }
+{NUMERO} { return tk_num; }
+{ID}     { return tk_id; }
 
-{PRINT} { return _PRINT; }
+{PRINT}  { return tk_print; }
 
 %%
 
@@ -65,6 +70,16 @@ int next_token(){
     return yylex();
 }
 
+string nome_token(int token){
+    if(nome_tokens.find(token) != nome_tokens.end()){
+        return nome_tokens[token];
+    } else{
+        string r;
+        r = token;
+        return r;
+    }
+}
+
 void casa(int esperado){
     if(token == esperado){
         token = next_token();
@@ -77,8 +92,8 @@ void casa(int esperado){
 //Início das regras da gramática
 void A(){
     switch(token){
-        case _ID:
-            casa(_ID);
+        case tk_id:
+            casa(tk_id);
             cout << lexema << endl;
             casa('=');
             E();
@@ -86,9 +101,9 @@ void A(){
             break;
         
 
-        case _PRINT:
+        case tk_print:
             token = next_token(); //Não queremos imprimir "print a", mas sim "a @"
-            casa(_PRINT);
+            casa(tk_print);
             F();
             if(lexema == ";"){
                 casa(';');
@@ -145,13 +160,13 @@ void T_linha(){
 
 void F(){
     switch(token){
-        case _ID:
-            casa(_ID);
+        case tk_id:
+            casa(tk_id);
             cout << lexema << '@' << endl;
         break;
 
-        case _NUMERO:
-            casa(_NUMERO);
+        case tk_num:
+            casa(tk_num);
             cout << lexema << endl;
         break;
 
