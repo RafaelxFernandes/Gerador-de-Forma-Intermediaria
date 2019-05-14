@@ -100,7 +100,7 @@ void A(){
         case _PRINT:
             casa(_PRINT);
             F();
-            if(yytext == ";"){
+            if((string)yytext == (string)";"){
                 casa(';');
             }
         break;
